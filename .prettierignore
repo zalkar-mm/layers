@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+.yarn
+yarn.lock
+# Markdown не форматируем: Prettier перестраивает таблицы и ломает ручную вёрстку документов.
+*.md

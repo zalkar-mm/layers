@@ -1,0 +1,25 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+*.local
+.env
+.env.*
+!.env.example
+
+# Yarn 4 (без Zero-Installs)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+.DS_Store
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.claude/settings.local.json
