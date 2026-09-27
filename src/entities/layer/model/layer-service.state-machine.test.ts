@@ -10,9 +10,6 @@ import { createLayerService } from './layer-service'
 import { createLayerStore } from './store'
 import type { LayerState } from './types'
 
-// Таблица машины состояний ТЗ §5.2 — один тест на строку, номер строки в имени (§5.2/N).
-// Сценарии гонок R1–R15 — в layer-service.test.ts, случайные последовательности — в *.invariants.test.ts.
-
 const temperature = layerId('temperature')
 const TTL_MS = 5 * 60_000
 
@@ -165,7 +162,6 @@ describe('машина состояний слоя (ТЗ §5.2)', () => {
   })
 
   it('§5.2/7: вкл/loading(r2) + устаревший ответ r1 → без изменений, в кэш не пишется', async () => {
-    // Abort не отклоняет промис: запрос «успел ответить» (как R8).
     const { service, layer, cache, calls } = setup({ honorAbort: false })
     service.enable(temperature)
     service.disable(temperature)

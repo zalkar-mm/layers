@@ -1,4 +1,4 @@
-import { formatAge } from '@/shared/lib/time'
+import { formatAge } from '@/shared/lib/format'
 
 import type { LoadState } from '../model/types'
 

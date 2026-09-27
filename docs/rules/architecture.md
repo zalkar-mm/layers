@@ -88,7 +88,7 @@ entities/layer/
 | `widgets` | `layer-panel`, `chaos-panel`, `map-view` |
 | `features` | `layer-control`, `bulk-actions`, `chaos-settings`, `stress-mode`, `url-sync` |
 | `entities` | `layer` — модель, реестр, стор, хуки, кэш, движок команд ([ADR 008](../adr/008-command-engine-in-entity.md)) |
-| `shared` | `api` (mock API), `lib/vedro`, `lib/dev` (счётчик рендеров), `lib/time`, `ui` |
+| `shared` | `api` (mock API), `lib/vedro`, `lib/dev` (счётчик рендеров), `lib/format`, `lib/time`, `ui` |
 
 Правило steiger `fsd/insignificant-slice` отключено: слайсы появлялись раньше потребителей (логика раньше UI), а фича с одним потребителем — нормальный случай. Остальные правила `recommended` включены.
 

@@ -1,6 +1,6 @@
 import type { LayerEvent, LayerEventKind } from '@/entities/layer'
 
-import { formatDuration } from '@/shared/lib/time'
+import { formatDuration } from '@/shared/lib/format'
 
 const OUTCOME: Readonly<Record<LayerEventKind, (event: LayerEvent) => string>> = {
   request: () => 'запрос',

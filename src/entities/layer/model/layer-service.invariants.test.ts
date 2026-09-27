@@ -11,16 +11,11 @@ import { createLayerService } from './layer-service'
 import { createLayerStore, type LayersById } from './store'
 import type { LayerId, LayerState } from './types'
 
-// Инварианты гонок (ТЗ §5.1, §5.2, §5.3, §4.2). Случайные последовательности команд и ответов
-// на 1–5 слоях, после каждого шага проверяются I1–I7. Генератор свой, seed фиксированный:
-// fast-check не подключён без согласования (docs/rules/workflow.md §6). Падение печатает seed и шаги.
-
 const SEQUENCES = 500
 const MAX_STEPS = 40
 const BASE_SEED = 20_260_926
 const TTL_MS = 1_000
 
-/** mulberry32 — детерминированный генератор, как в mock API. */
 const createRandom = (seed: number) => {
   let state = seed >>> 0
 
@@ -47,7 +42,6 @@ type Call = {
   readonly index: number
   readonly id: LayerId
   readonly signal: AbortSignal
-  /** false — эмуляция fetch, который ответил несмотря на abort (R8). */
   readonly honorAbort: boolean
   readonly data: LayerData
   readonly resolve: (data: LayerData) => void
@@ -140,7 +134,6 @@ const createWorld = (random: Random, layerCount: number) => {
 
   const service = createLayerService({ store, fetchLayerData, cache, now, onEvents })
 
-  // I6 проверяется на каждом dispatch, а не только после шага.
   const violations: string[] = []
   let previous: LayersById = store.get('byId')
   const ids = store.get('ids')
@@ -196,29 +189,23 @@ const requestIdOf = (world: World, call: Call): number => {
 const isPending = (call: Call) => !call.settled
 const isLive = (call: Call) => !call.settled && !call.signal.aborted
 
-/** Проверки I1–I5 и модель «включён ли слой» после шага. */
 const checkInvariants = (world: World, expectedEnabled: ReadonlyMap<LayerId, boolean>) => {
   const problems = [...world.violations]
   world.violations.length = 0
 
   for (const id of world.registry.ids) {
     const layer = layerOf(world, id)
-    // I1: выключенный слой всегда idle.
     if (!layer.enabled && layer.load.kind !== 'idle')
       problems.push(`I1: ${id} выключен, но ${layer.load.kind}`)
-    // I2: в полёте не больше одного живого запроса на слой.
     const live = world.calls.filter((call) => call.id === id && isLive(call)).length
     if (live > 1) problems.push(`I2: ${id} — живых запросов ${String(live)}`)
-    // I3: loading ждёт последний выданный запрос.
     if (layer.load.kind === 'loading' && layer.load.requestId !== world.lastIssued.get(id)) {
       problems.push(
         `I3: ${id} ждёт r${String(layer.load.requestId)}, последний — r${String(world.lastIssued.get(id))}`,
       )
     }
-    // Модель R5: флаг включения соответствует последней команде.
     if (layer.enabled !== expectedEnabled.get(id))
       problems.push(`R5: ${id} enabled=${String(layer.enabled)}`)
-    // Живой запрос есть ⇔ слой в loading.
     if (live === 1 && layer.load.kind !== 'loading')
       problems.push(`I2: ${id} — живой запрос у слоя в ${layer.load.kind}`)
   }
@@ -265,7 +252,6 @@ const nextStep = (random: Random, world: World): Step => {
   ])
 }
 
-/** Выполняет шаг и возвращает нарушения, специфичные для ответа (I4, I5). */
 const runStep = async (
   world: World,
   step: Step,
@@ -327,7 +313,6 @@ const runStep = async (
       else call.reject(abortError())
       await flush()
       const writes = world.cacheWrites.slice(writesBefore)
-      // I4: в кэш пишется только ответ, прошедший проверку requestId.
       if (
         writes.some((write) => write.data !== call.data || !wasCurrent || step.kind !== 'resolve')
       ) {
@@ -335,11 +320,9 @@ const runStep = async (
       }
       const layerAfter = layerOf(world, call.id)
       if (step.kind === 'abortError') {
-        // I5: отмена не меняет стор: ни error, ни attempt.
         if (world.store.get('byId') !== byIdBefore)
           problems.push(`I5: AbortError r${String(requestId)} изменил стор`)
       } else if (!wasCurrent) {
-        // Устаревший ответ отбрасывается целиком (R1, R8, R12).
         if (layerAfter !== layerBefore)
           problems.push(`R8: устаревший r${String(requestId)} изменил слой`)
       } else if (step.kind === 'resolve') {
@@ -358,7 +341,6 @@ const runStep = async (
   return problems
 }
 
-/** Завершает всё, что в полёте: после этого ни один слой не должен остаться в loading (I7). */
 const drain = async (world: World) => {
   for (const call of world.calls) {
     if (call.settled) continue

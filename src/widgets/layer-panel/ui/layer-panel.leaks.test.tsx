@@ -16,9 +16,6 @@ import { theme } from '@/shared/ui'
 
 import { LayerPanel } from './layer-panel'
 
-// Утечки таймеров (ТЗ §7.2: тик «N мин назад» живёт только в строках с кэшем).
-// fireEvent вместо userEvent — фейковые таймеры Vitest (см. layer-panel.test.tsx).
-
 const DELAY = 500
 
 const renderPanel = () =>
@@ -58,12 +55,10 @@ describe('утечки таймеров панели (ТЗ §7.2, §5)', () => {
 
     fireEvent.click(toggleOf('Температура'))
     await advance(DELAY)
-    // success без кэша в бейдже — тика нет, запросов нет.
     expect(vi.getTimerCount()).toBe(0)
 
     fireEvent.click(toggleOf('Температура'))
     fireEvent.click(toggleOf('Температура'))
-    // loading со stale: один запрос (задержка mock) + один тик бейджа.
     expect(screen.getByText(/^Обновление/)).toBeInTheDocument()
     expect(vi.getTimerCount()).toBe(2)
 

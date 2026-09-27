@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import { layerCommands, useCacheStats } from '@/entities/layer'
 
-import { formatDuration } from '@/shared/lib/time'
+import { formatDuration } from '@/shared/lib/format'
 import { Button, Slider, Switch } from '@/shared/ui'
 
 import {

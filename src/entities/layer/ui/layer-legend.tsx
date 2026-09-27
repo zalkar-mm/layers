@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-import { formatNumber } from '@/shared/lib/time'
+import { formatNumber } from '@/shared/lib/format'
 import { GradientBar } from '@/shared/ui'
 
 import type { LayerConfig } from '../model/types'

@@ -15,10 +15,6 @@ import {
 import { layerStore, setActiveRegistry, subscribeToLayers } from './layer-store'
 import { updateLayer } from './store'
 
-// Утечки подписок (ТЗ §9: «без утечек — проверяется повторным монтированием в StrictMode»).
-// Считаем живые подписки на стор слоёв: каждый вызов layerStore.on оборачивается,
-// отписка уменьшает счётчик один раз (повторная отписка — V6 — не должна влиять).
-
 const temperature = layerId('temperature')
 
 let active = 0
@@ -109,7 +105,6 @@ describe('утечки подписок хуков (ТЗ §4.3, §9)', () => {
       updateLayer(layerStore, temperature, (layer) => ({ ...layer, opacity: 0.2 }))
     })
 
-    // Жив только новый слушатель; ошибок «setState на размонтированном» нет — React бы предупредил.
     expect(listener).toHaveBeenCalledTimes(1)
     expect(active).toBe(1)
     unsubscribe()

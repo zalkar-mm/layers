@@ -12,9 +12,6 @@ import {
 
 import { setStressMode } from './stress-mode'
 
-// Повторная проверка БАГ-1 (§10.2, §11.1): возврат из стресс-режима на граничных случаях —
-// запрос в полёте, серия быстрых переключений, слой в ошибке, данные в кэше.
-
 const DELAY = 500
 const temperature = layerId('temperature')
 const wind = layerId('wind')
