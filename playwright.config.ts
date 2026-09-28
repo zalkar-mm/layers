@@ -4,7 +4,7 @@ const PORT = 4173
 const isCi = Boolean(process.env.CI)
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: isCi,
   retries: 0,

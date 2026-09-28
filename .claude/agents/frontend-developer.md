@@ -56,7 +56,7 @@ model: inherit
 | `react`, `react-dom` | 19.3.x | `@types/react`, `@types/react-dom` 19.3.x |
 | `react-router` | 8.4.x | `RouterProvider` — из `react-router/dom`. URL-состояние (§11.1 ТЗ) |
 | `styled-components` | 6.5.x | Transient-пропсы, тема через `DefaultTheme` |
-| `vedro` | **1.1.0 точно** | Поведение завязано на версию (§0 ТЗ). Хуки: `createVedro` → `useSelector`/`useDispatch`, отдельно `useVedroSelector` |
+| `vedro` | **1.1.0 точно** | Поведение завязано на версию (§0 ТЗ). Хуки: `createVedro` → `useSelector`/`useDispatch`, отдельно `useVedroSelector`. Подключаем только через `bindVedroStore` из `shared/lib/vedro` ([ADR 009](../../docs/adr/009-standard-vedro-api.md)) |
 | `maplibre-gl` | 6.11.x | API сверять с документацией 6.x, не с памятью |
 | `@tanstack/react-virtual` | 3.14.x | Виртуализация в стресс-режиме |
 
@@ -203,7 +203,7 @@ Feature-Sliced Design. Правила — `docs/rules/architecture.md`, не д�
 | 0 Каркас | — | (a) конфиги; (b) CI + деплой; (c) задача 0.8 — проверка находок vedro в `docs/vedro-findings/` | Пакет (c) пишет по тесту на каждую находку V1–V7, итог — таблица статусов. Опровергнутые находки убрать из дальнейших решений |
 | 1 Модель | — | Один пакет | Branded `LayerId`, discriminated union, реестр |
 | 2 Mock API | — | Один пакет | Seed, abort, типизированные ошибки, GeoJSON-сетка |
-| 3 Стор | vedro в `node_modules` | Один пакет | Привязки `useSyncExternalStore`, тест structural sharing (R9) |
+| 3 Стор | vedro в `node_modules` | Один пакет | Привязки `bindVedroStore` (штатный `useSelector` + страховка V4, ADR 009), тест structural sharing (R9) |
 | 4 Команды и кэш | — | (a) тесты R1–R15; затем (b) команды; (c) кэш | Тесты пишутся **первыми**, отдельным субагентом, строго по таблицам §5.2 и §6 |
 | 5 UI панели | — | (a) `shared/ui`; (b) `LayerRow` + `LayerPanel` | Тексты интерфейса — на русском, из §7.2 |
 | 6 Рендеры | — | (a) счётчик рендеров; (b) тесты бюджета §8 | StrictMode не отключать |
@@ -222,7 +222,9 @@ Feature-Sliced Design. Правила — `docs/rules/architecture.md`, не д�
 Полный список — `docs/rules/code-style.md` и §13 ТЗ. Самое важное:
 
 - Без `any`, `as` (кроме `as const` и конструктора branded-типа), `!`, `@ts-ignore`, `enum`.
-- Невозможные состояния непредставимы в типах: discriminated unions, исчерпывающий `switch`.
+- Невозможные состояния непредставимы в типах: discriminated unions, исчерпывающий `switch` — только там, где нужно сужение union. Справочник «значение union → подпись, цвет, стратегия» — `Record`-карта ([ADR 010](../../docs/adr/010-render-strategies.md)).
+- JSX без JS: ни `&&`, ни тернарок, ни инлайн-функций и вызовов в `onX` — значения в константах тела, обработчики `handleX`, пропсы — `type XProps`.
+- Стили — только токены темы и миксины `shared/ui` (тач-цели 44 px — `touchArea`, без перекрытия соседей).
 - Стор vedro: только синхронный `dispatch`. Асинхронность — в командах.
 - Компоненты `memo` получают стабильные пропсы. Мемоизация — только по бюджету §8 и с тестом.
 - Никаких загрузок в `useEffect` компонентов. Никакого React Context для состояния слоёв.

@@ -28,8 +28,16 @@
     "erasableSyntaxOnly": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tests/*": ["./tests/support/*"]
     }
   },
-  "include": ["src", "vitest.setup.ts", "docs/vedro-findings", "perf"]
+  "include": [
+    "src",
+    "tests/unit",
+    "tests/support",
+    "tests/perf",
+    "vitest.setup.ts",
+    "docs/vedro-findings"
+  ]
 }

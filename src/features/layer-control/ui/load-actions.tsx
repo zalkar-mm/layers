@@ -2,30 +2,32 @@ import { layerCommands, type LayerId } from '@/entities/layer'
 
 import { Button, IconButton } from '@/shared/ui'
 
-type ActionProps = {
+export type LoadActionProps = {
   readonly id: LayerId
   readonly title: string
 }
 
-export function RetryButton({ id, title }: ActionProps) {
+export function RetryButton({ id, title }: LoadActionProps) {
+  const label = `Повторить загрузку слоя «${title}»`
   const handleClick = () => {
     layerCommands.retry(id)
   }
 
   return (
-    <Button onClick={handleClick} aria-label={`Повторить загрузку слоя «${title}»`}>
+    <Button onClick={handleClick} aria-label={label}>
       Повторить
     </Button>
   )
 }
 
-export function RefreshButton({ id, title }: ActionProps) {
+export function RefreshButton({ id, title }: LoadActionProps) {
+  const label = `Обновить слой «${title}»`
   const handleClick = () => {
     layerCommands.refresh(id)
   }
 
   return (
-    <IconButton onClick={handleClick} aria-label={`Обновить слой «${title}»`} title="Обновить">
+    <IconButton onClick={handleClick} aria-label={label} title="Обновить">
       <span aria-hidden>↻</span>
     </IconButton>
   )

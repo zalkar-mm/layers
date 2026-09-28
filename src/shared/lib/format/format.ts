@@ -1,3 +1,5 @@
+import { MS_PER_SECOND } from '@/shared/lib/time'
+
 export const formatAge = (ageMs: number): string => {
   const minutes = Math.floor(Math.max(0, ageMs) / 60_000)
   if (minutes < 1) return 'меньше минуты назад'
@@ -7,7 +9,7 @@ export const formatAge = (ageMs: number): string => {
 }
 
 export const formatDuration = (ms: number): string => {
-  const totalSeconds = Math.round(Math.max(0, ms) / 1000)
+  const totalSeconds = Math.round(Math.max(0, ms) / MS_PER_SECOND)
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   if (minutes === 0) return `${String(seconds)} с`

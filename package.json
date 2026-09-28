@@ -22,7 +22,7 @@
     "e2e": "playwright test",
     "check": "yarn lint && yarn lint:fsd && yarn typecheck && yarn test && yarn build",
     "postinstall": "husky",
-    "perf": "vitest run perf"
+    "perf": "vitest run tests/perf"
   },
   "dependencies": {
     "@tanstack/react-virtual": "3.14.13",

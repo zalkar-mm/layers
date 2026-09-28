@@ -15,3 +15,14 @@ export const incrementRenderCount = (name: string): number => {
 export const resetRenderCounts = (): void => {
   counts.clear()
 }
+
+const VISIBILITY_ATTRIBUTE = 'renderCounts'
+
+let renderCountsVisible = false
+
+export const isRenderCountsVisible = (): boolean => renderCountsVisible
+
+export const setRenderCountsVisible = (visible: boolean): void => {
+  renderCountsVisible = visible
+  document.documentElement.dataset[VISIBILITY_ATTRIBUTE] = visible ? 'on' : 'off'
+}

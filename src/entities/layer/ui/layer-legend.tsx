@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { formatNumber } from '@/shared/lib/format'
 import { GradientBar } from '@/shared/ui'
 
-import type { LayerConfig } from '../model/types'
+import type { LayerConfig } from '../model/state/types'
 
 type LayerLegendProps = {
   readonly config: LayerConfig
@@ -11,14 +11,16 @@ type LayerLegendProps = {
 
 export function LayerLegend({ config }: LayerLegendProps) {
   const [min, max] = config.valueRange
+  const minText = formatNumber(min)
+  const maxText = formatNumber(max)
 
   return (
     <Legend>
       <GradientBar colors={config.palette} />
       <Range>
-        <span>{formatNumber(min)}</span>
+        <span>{minText}</span>
         <span>
-          {formatNumber(max)} {config.unit}
+          {maxText} {config.unit}
         </span>
       </Range>
     </Legend>
@@ -27,7 +29,7 @@ export function LayerLegend({ config }: LayerLegendProps) {
 
 const Legend = styled.div`
   display: grid;
-  gap: 2px;
+  gap: ${({ theme }) => theme.space.xxs};
 `
 
 const Range = styled.div`

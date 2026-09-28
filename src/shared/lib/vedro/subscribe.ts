@@ -12,18 +12,6 @@ export const once = (fn: () => void): (() => void) => {
   }
 }
 
-export const createStoreSubscribe =
-  <S extends object>(store: Vedro<S>) =>
-  (onChange: () => void): Unsubscribe => {
-    let ready = false
-    const unsubscribe = store.on('@state', () => {
-      if (ready) onChange()
-    })
-    ready = true
-
-    return once(unsubscribe)
-  }
-
 export const subscribeToKey = <S extends object, K extends keyof S>(
   store: Vedro<S>,
   key: K,

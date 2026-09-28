@@ -5,7 +5,7 @@ import { useLayerIds } from '@/entities/layer'
 
 import { RenderCount } from '@/shared/lib/dev'
 
-import { LayerList } from './layer-list'
+import { LayerList } from './list/layer-list'
 import { LayerPanelHeader } from './layer-panel-header'
 
 type LayerPanelProps = {

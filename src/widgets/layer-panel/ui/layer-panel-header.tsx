@@ -13,10 +13,15 @@ type LayerPanelHeaderProps = {
 
 export function LayerPanelHeader({ children }: LayerPanelHeaderProps) {
   const summary = useLayersSummary()
-  const details = [
+  const detailsText = [
     summary.loading > 0 ? `загружается ${String(summary.loading)}` : null,
     summary.failed > 0 ? `ошибок ${String(summary.failed)}` : null,
-  ].filter((part) => part !== null)
+  ]
+    .filter((part) => part !== null)
+    .join(' · ')
+  const enableAllDisabled = summary.enabled === summary.total
+  const disableAllDisabled = summary.enabled === 0
+  const retryFailedDisabled = summary.failed === 0
 
   return (
     <Header>
@@ -24,8 +29,12 @@ export function LayerPanelHeader({ children }: LayerPanelHeaderProps) {
       <Title>
         Слои · активно {summary.enabled} из {summary.total}
       </Title>
-      <Details aria-live="polite">{details.join(' · ')}</Details>
-      <BulkActions summary={summary} />
+      <Details aria-live="polite">{detailsText}</Details>
+      <BulkActions
+        enableAllDisabled={enableAllDisabled}
+        disableAllDisabled={disableAllDisabled}
+        retryFailedDisabled={retryFailedDisabled}
+      />
       {children}
     </Header>
   )

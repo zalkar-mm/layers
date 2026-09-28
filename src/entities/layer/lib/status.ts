@@ -1,6 +1,6 @@
 import { formatAge } from '@/shared/lib/format'
 
-import type { LoadState } from '../model/types'
+import type { LayerRowStatus } from './row-view'
 
 export type StatusTone = 'progress' | 'success' | 'danger'
 
@@ -10,30 +10,40 @@ export type StatusView = {
   readonly busy: boolean
 }
 
-export const describeStatus = (load: LoadState, now: number): StatusView | null => {
-  switch (load.kind) {
+type StaleAwareText = {
+  readonly fresh: string
+  readonly stale: string
+}
+
+const LOADING_TEXT: StaleAwareText = { fresh: 'Загрузка…', stale: 'Обновление · данные' }
+const ERROR_TEXT: StaleAwareText = { fresh: 'Ошибка', stale: 'Ошибка · показаны данные' }
+
+const staleAwareText = (text: StaleAwareText, staleLoadedAt: number | null, now: number) => {
+  if (staleLoadedAt === null) return text.fresh
+
+  return `${text.stale} ${formatAge(now - staleLoadedAt)}`
+}
+
+export const describeStatus = (status: LayerRowStatus, now: number): StatusView | null => {
+  switch (status.kind) {
     case 'idle':
       return null
     case 'loading':
-      return load.stale === null
-        ? { tone: 'progress', text: 'Загрузка…', busy: true }
-        : {
-            tone: 'progress',
-            text: `Обновление · данные ${formatAge(now - load.stale.loadedAt)}`,
-            busy: true,
-          }
+      return {
+        tone: 'progress',
+        text: staleAwareText(LOADING_TEXT, status.staleLoadedAt, now),
+        busy: true,
+      }
     case 'success':
-      return { tone: 'success', text: `Готово · ${String(load.durationMs)} мс`, busy: false }
+      return { tone: 'success', text: `Готово · ${String(status.durationMs)} мс`, busy: false }
     case 'error':
-      return load.stale === null
-        ? { tone: 'danger', text: 'Ошибка', busy: false }
-        : {
-            tone: 'danger',
-            text: `Ошибка · показаны данные ${formatAge(now - load.stale.loadedAt)}`,
-            busy: false,
-          }
+      return {
+        tone: 'danger',
+        text: staleAwareText(ERROR_TEXT, status.staleLoadedAt, now),
+        busy: false,
+      }
   }
 }
 
-export const hasStaleData = (load: LoadState): boolean =>
-  (load.kind === 'loading' || load.kind === 'error') && load.stale !== null
+export const hasStaleData = (status: LayerRowStatus): boolean =>
+  'staleLoadedAt' in status && status.staleLoadedAt !== null

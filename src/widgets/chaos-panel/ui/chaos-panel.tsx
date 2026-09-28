@@ -23,7 +23,7 @@ const Details = styled.details`
 
 const Summary = styled.summary`
   padding: ${({ theme }) => theme.space.md};
-  font-weight: 600;
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
   cursor: pointer;
 `
 

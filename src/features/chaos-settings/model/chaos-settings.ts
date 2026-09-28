@@ -1,9 +1,7 @@
-import { useSyncExternalStore } from 'react'
-
 import { getActiveRegistry, layerApi, layerCache, layerCommands } from '@/entities/layer'
 
 import { createRandomSeed } from '@/shared/api'
-import { createStoreSubscribe, createVedroStore } from '@/shared/lib/vedro'
+import { bindVedroStore, createVedroStore } from '@/shared/lib/vedro'
 
 export type ChaosSettings = {
   readonly minDelayMs: number
@@ -69,17 +67,53 @@ export const randomizeSeed = (): void => {
   updateChaosSettings({ seed: createRandomSeed() })
 }
 
+export const setMinDelayMs = (minDelayMs: number): void => {
+  updateChaosSettings({ minDelayMs })
+}
+
+export const setMaxDelayMs = (maxDelayMs: number): void => {
+  updateChaosSettings({ maxDelayMs })
+}
+
+export const setErrorRate = (errorRate: number): void => {
+  updateChaosSettings({ errorRate })
+}
+
+export const setSeed = (seed: number): void => {
+  updateChaosSettings({ seed })
+}
+
+export const setCacheTtlMs = (cacheTtlMs: number): void => {
+  updateChaosSettings({ cacheTtlMs })
+}
+
+export const toggleIgnoreAbort = (): void => {
+  updateChaosSettings({ ignoreAbort: !settingsStore.get('settings').ignoreAbort })
+}
+
+export const toggleCache = (): void => {
+  updateChaosSettings({ cacheEnabled: !settingsStore.get('settings').cacheEnabled })
+}
+
 const SPAM_CLICKS = 20
 const SPAM_DURATION_MS = 500
 
-export const spamClick = (): (() => void) => {
+let stopRunningSpam: (() => void) | null = null
+
+export const stopSpam = (): void => {
+  stopRunningSpam?.()
+}
+
+export const spamClick = (): void => {
+  stopSpam()
   const { ids } = getActiveRegistry()
   const target = ids[Math.floor(Math.random() * ids.length)]
-  if (target === undefined) return () => undefined
+  if (target === undefined) return
 
   let clicks = 0
   const stop = () => {
     clearInterval(timer)
+    if (stopRunningSpam === stop) stopRunningSpam = null
     settingsStore.dispatch({ spamming: false })
   }
   const timer = setInterval(() => {
@@ -87,15 +121,15 @@ export const spamClick = (): (() => void) => {
     clicks += 1
     if (clicks >= SPAM_CLICKS) stop()
   }, SPAM_DURATION_MS / SPAM_CLICKS)
+  stopRunningSpam = stop
   settingsStore.dispatch({ spamming: true })
-
-  return stop
 }
 
-const subscribe = createStoreSubscribe(settingsStore)
-const getSettings = () => settingsStore.get('settings')
-const getSpamming = () => settingsStore.get('spamming')
+const settingsBinding = bindVedroStore(settingsStore)
 
-export const useChaosSettings = (): ChaosSettings => useSyncExternalStore(subscribe, getSettings)
+export const ChaosSettingsProvider = settingsBinding.Provider
 
-export const useSpamming = (): boolean => useSyncExternalStore(subscribe, getSpamming)
+export const useChaosSetting = <K extends keyof ChaosSettings>(key: K): ChaosSettings[K] =>
+  settingsBinding.useSelector((state) => state.settings[key])
+
+export const useSpamming = (): boolean => settingsBinding.useSelector((state) => state.spamming)

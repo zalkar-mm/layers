@@ -1,5 +1,3 @@
-import { useSyncExternalStore } from 'react'
-
 import {
   baseLayerRegistry,
   createLayerRegistry,
@@ -8,16 +6,18 @@ import {
   switchLayerSet,
 } from '@/entities/layer'
 
-import { createStoreSubscribe, createVedroStore } from '@/shared/lib/vedro'
+import { bindVedroStore, createVedroStore } from '@/shared/lib/vedro'
 
 export const STRESS_MODES = [3, 100, 1000] as const
 
 export type StressMode = (typeof STRESS_MODES)[number]
 
-const initial: { readonly mode: StressMode } = { mode: 3 }
+const BASE_STRESS_MODE = STRESS_MODES[0]
+
+const initial: { readonly mode: StressMode } = { mode: BASE_STRESS_MODE }
 const modeStore = createVedroStore('stress-mode', initial)
 
-const registries = new Map<StressMode, LayerRegistry>([[3, baseLayerRegistry]])
+const registries = new Map<StressMode, LayerRegistry>([[BASE_STRESS_MODE, baseLayerRegistry]])
 
 const registryFor = (mode: StressMode): LayerRegistry => {
   const cached = registries.get(mode)
@@ -34,7 +34,8 @@ export const setStressMode = (mode: StressMode): void => {
   modeStore.dispatch({ mode })
 }
 
-const subscribe = createStoreSubscribe(modeStore)
-const getMode = () => modeStore.get('mode')
+const modeBinding = bindVedroStore(modeStore)
 
-export const useStressMode = (): StressMode => useSyncExternalStore(subscribe, getMode)
+export const StressModeProvider = modeBinding.Provider
+
+export const useStressMode = (): StressMode => modeBinding.useSelector((state) => state.mode)

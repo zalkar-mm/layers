@@ -22,7 +22,18 @@ const RESTRICTED_SYNTAX = [
   {
     selector: "JSXExpressionContainer > LogicalExpression[operator='&&']",
     message:
-      '`&&` в JSX запрещён: `0` и `""` рендерятся текстом. Используй тернарку или ранний return (code-style.md §5).',
+      '`&&` в JSX запрещён: `0` и `""` рендерятся текстом. Вынеси условие в компонент с ранним return (code-style.md §5).',
+  },
+  {
+    selector: 'JSXExpressionContainer ConditionalExpression',
+    message:
+      'Тернарка в JSX запрещена. Вычисли значение в теле компонента, возьми его из Record-карты или вынеси условие в компонент с ранним return (code-style.md §5).',
+  },
+  {
+    selector:
+      'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer > :matches(ArrowFunctionExpression, FunctionExpression, CallExpression)',
+    message:
+      'Инлайн-функция в обработчике запрещена. Объяви `handleX` в теле компонента или передай проп `onX` напрямую (code-style.md §5).',
   },
   {
     selector:
@@ -31,6 +42,36 @@ const RESTRICTED_SYNTAX = [
       'Загрузка в useEffect запрещена. Загрузку запускают команды из model (state-and-async.md §1).',
   },
 ]
+
+const VEDRO_IMPORT = {
+  name: 'vedro',
+  message:
+    'vedro подключается только через @/shared/lib/vedro: createVedroStore и bindVedroStore (CJS-interop прод-сборки, ADR 009).',
+}
+
+const VEDRO_DEEP_IMPORT = {
+  group: ['vedro/*'],
+  message: VEDRO_IMPORT.message,
+}
+
+const USE_SYNC_EXTERNAL_STORE_MESSAGE = 'Чтение стора — через штатный useSelector (ADR 009)'
+
+const USE_SYNC_EXTERNAL_STORE_SYNTAX = [
+  {
+    selector: "MemberExpression[property.name='useSyncExternalStore']",
+    message: USE_SYNC_EXTERNAL_STORE_MESSAGE,
+  },
+  {
+    selector: "ObjectPattern > Property[key.name='useSyncExternalStore']",
+    message: USE_SYNC_EXTERNAL_STORE_MESSAGE,
+  },
+]
+
+const USE_SYNC_EXTERNAL_STORE_IMPORT = {
+  name: 'react',
+  importNames: ['useSyncExternalStore'],
+  message: USE_SYNC_EXTERNAL_STORE_MESSAGE,
+}
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results', '.yarn']),
@@ -74,6 +115,7 @@ export default defineConfig([
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: false }],
 
       'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
+      'no-restricted-imports': ['error', { paths: [VEDRO_IMPORT], patterns: [VEDRO_DEEP_IMPORT] }],
       'no-nested-ternary': 'error',
       'no-console': ['error', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'always'],
@@ -91,6 +133,7 @@ export default defineConfig([
             ['^react$', '^react-dom', '^react/'],
             ['^node:', '^@?\\w'],
             ...LAYERS.map((layer) => [`^@/${layer}(/.*|$)`]),
+            ['^@tests(/.*|$)'],
             ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
             ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
             ['^\\u0000'],
@@ -131,21 +174,15 @@ export default defineConfig([
 
       'no-restricted-imports': [
         'error',
+        { paths: [VEDRO_IMPORT, USE_SYNC_EXTERNAL_STORE_IMPORT], patterns: [VEDRO_DEEP_IMPORT] },
+      ],
+      'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX, ...USE_SYNC_EXTERNAL_STORE_SYNTAX],
+      'no-restricted-properties': [
+        'error',
         {
-          paths: [
-            {
-              name: 'vedro',
-              importNames: ['default'],
-              message:
-                'Стор создаётся через createVedroStore из @/shared/lib/vedro (CJS-interop прод-сборки).',
-            },
-            {
-              name: 'vedro',
-              importNames: ['useVedroSelector'],
-              message:
-                'Штатный селектор vedro не используем: подписка через хуки entities/layer (ТЗ §4.3).',
-            },
-          ],
+          object: 'React',
+          property: 'useSyncExternalStore',
+          message: USE_SYNC_EXTERNAL_STORE_MESSAGE,
         },
       ],
 
@@ -205,14 +242,22 @@ export default defineConfig([
 
   {
     files: ['src/shared/lib/vedro/**'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [USE_SYNC_EXTERNAL_STORE_IMPORT] }],
+    },
+  },
+
+  {
+    files: ['tests/perf/**', 'docs/vedro-findings/**'],
     rules: { 'no-restricted-imports': 'off' },
   },
 
   {
     files: [
-      'src/**/*.test.{ts,tsx}',
+      'tests/unit/**/*.{ts,tsx}',
+      'tests/support/**/*.{ts,tsx}',
+      'tests/perf/**/*.{ts,tsx}',
       'docs/vedro-findings/**/*.test.{ts,tsx}',
-      'perf/**/*.test.{ts,tsx}',
     ],
     extends: [vitest.configs.recommended, testingLibrary.configs['flat/react']],
     rules: {
@@ -223,7 +268,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['e2e/**/*.ts'],
+    files: ['tests/e2e/**/*.ts'],
     extends: [playwright.configs['flat/recommended']],
     rules: {
       'playwright/no-skipped-test': ['error', { allowConditional: true }],

@@ -1,28 +1,29 @@
-export { layerApi } from './api/layer-api'
-export { baseLayerRegistry, layerId } from './config/base-layers'
-export { createLayerRegistry, type LayerRegistry } from './config/layer-registry'
-export { createSyntheticLayerConfigs } from './config/synthetic-layers'
-export type { LayerEvent, LayerEventKind } from './model/event-log'
+export { baseLayerRegistry } from './config/layers/base-layers'
+export { createSyntheticLayerConfigs } from './config/layers/synthetic-layers'
+export { createLayerRegistry, type LayerRegistry } from './config/registry/layer-registry'
+export type { LayerRowView } from './lib/row-view'
+export type { LayerEvent, LayerEventKind } from './model/loading/event-log'
+export { layerApi, layerCache, layerCommands, switchLayerSet } from './model/runtime'
 export {
-  useEnabledLayerIds,
-  useLayer,
-  useLayerIds,
-  useLayerMapStatus,
-  useLayersSummary,
-} from './model/hooks'
-export { createInitialLayerState } from './model/initial-state'
-export { getActiveRegistry, getLayerConfig, subscribeToLayers } from './model/layer-store'
-export {
-  layerCache,
-  layerCommands,
-  layerEventLog,
-  switchLayerSet,
   useCacheStats,
   useLayerEvents,
-} from './model/runtime'
-export type { LayersById } from './model/store'
-export type { LayersSummary } from './model/summary'
-export { visibleData } from './model/transitions'
-export type { LayerConfig, LayerData, LayerId, LayerState, LoadState } from './model/types'
+  useLayerIds,
+  useLayerMapStatus,
+  useLayerRow,
+  useLayersSummary,
+  useMapOverlay,
+} from './model/selectors/hooks'
+export type { LayerMapStatus } from './model/selectors/map-status'
+export { visibleData } from './model/state/transitions'
+export type {
+  LayerConfig,
+  LayerData,
+  LayerId,
+  LayerRenderKind,
+  LayerState,
+} from './model/state/types'
+export { getActiveRegistry, getLayerConfig, subscribeToLayers } from './model/store/layer-store'
+export type { LayersById } from './model/store/store'
 export { LayerLegend } from './ui/layer-legend'
 export { LayerStatus } from './ui/layer-status'
+export { LayerStoresProvider } from './ui/layer-stores-provider'

@@ -1,6 +1,6 @@
+import { generateGrid } from './generation/grid'
+import { createRandom, hashString, UINT32_RANGE } from './generation/random'
 import { API_ERROR_MESSAGES, type ApiErrorKind, createAbortError, LayerApiError } from './errors'
-import { generateGrid } from './grid'
-import { createRandom, hashString } from './random'
 import type { LayerData, LayerDataRequest } from './types'
 
 export { isAbortError, LayerApiError } from './errors'
@@ -58,7 +58,7 @@ export const createMockLayerApi = ({
     const delayRoll = random()
     const errorRoll = random()
     const kindRoll = random()
-    const dataSeed = Math.floor(random() * 4294967296)
+    const dataSeed = Math.floor(random() * UINT32_RANGE)
 
     const { minDelayMs, maxDelayMs, errorRate, ignoreAbort } = settings
     if (signal.aborted && !ignoreAbort) return Promise.reject(abortReason(signal))

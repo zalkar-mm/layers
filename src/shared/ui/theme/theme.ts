@@ -12,8 +12,10 @@ export const theme = {
     surfaceMuted: '#eef1f5',
     focus: '#1d4ed8',
     accentText: '#ffffff',
+    debug: '#7c3aed',
   },
   space: {
+    xxs: '2px',
     xs: '4px',
     sm: '8px',
     md: '12px',
@@ -23,6 +25,10 @@ export const theme = {
   radii: {
     sm: '4px',
     md: '8px',
+  },
+  fontWeights: {
+    regular: 400,
+    semibold: 600,
   },
   fontSizes: {
     sm: '12px',
@@ -34,8 +40,13 @@ export const theme = {
     desktop: '1024px',
   },
   sizes: {
+    control: '32px',
     touchTarget: '44px',
+    focusRing: '2px',
     sidebar: '360px',
+  },
+  shadows: {
+    floating: '0 1px 4px rgb(0 0 0 / 15%)',
   },
 } as const
 

@@ -2,6 +2,8 @@ import { useId } from 'react'
 
 import styled from 'styled-components'
 
+import { insetFocusOutline, touchArea } from '@/shared/ui'
+
 import { setStressMode, STRESS_MODES, type StressMode, useStressMode } from '../model/stress-mode'
 
 export function StressModeSwitch() {
@@ -11,23 +13,39 @@ export function StressModeSwitch() {
   return (
     <Group role="radiogroup" aria-labelledby={legendId}>
       <Legend id={legendId}>Число слоёв</Legend>
-      {STRESS_MODES.map((mode: StressMode) => (
-        <Option key={mode}>
-          <Radio
-            type="radio"
-            name="stress-mode"
-            value={mode}
-            checked={mode === current}
-            onChange={() => {
-              setStressMode(mode)
-            }}
-          />
-          <OptionText>{mode}</OptionText>
-        </Option>
+      {STRESS_MODES.map((mode) => (
+        <StressModeOption key={mode} mode={mode} current={current} />
       ))}
     </Group>
   )
 }
+
+type StressModeOptionProps = {
+  readonly mode: StressMode
+  readonly current: StressMode
+}
+
+function StressModeOption({ mode, current }: StressModeOptionProps) {
+  const checked = mode === current
+  const handleChange = () => {
+    setStressMode(mode)
+  }
+
+  return (
+    <Option>
+      <Radio
+        type="radio"
+        name="stress-mode"
+        value={mode}
+        checked={checked}
+        onChange={handleChange}
+      />
+      <OptionText>{mode}</OptionText>
+    </Option>
+  )
+}
+
+const OPTION_MIN_WIDTH = '48px'
 
 const Group = styled.fieldset`
   display: inline-flex;
@@ -35,7 +53,6 @@ const Group = styled.fieldset`
   padding: 0;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
-  overflow: hidden;
 `
 
 const Legend = styled.legend`
@@ -59,12 +76,21 @@ const Radio = styled.input`
 `
 
 const OptionText = styled.span`
+  ${touchArea}
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  min-height: 32px;
+  min-width: ${OPTION_MIN_WIDTH};
+  min-height: ${({ theme }) => theme.sizes.control};
   background: ${({ theme }) => theme.colors.surface};
+
+  ${Option}:first-of-type > & {
+    border-radius: ${({ theme }) => `${theme.radii.sm} 0 0 ${theme.radii.sm}`};
+  }
+
+  ${Option}:last-of-type > & {
+    border-radius: ${({ theme }) => `0 ${theme.radii.sm} ${theme.radii.sm} 0`};
+  }
 
   input:checked + & {
     background: ${({ theme }) => theme.colors.accent};
@@ -72,7 +98,6 @@ const OptionText = styled.span`
   }
 
   input:focus-visible + & {
-    outline: 2px solid ${({ theme }) => theme.colors.focus};
-    outline-offset: -2px;
+    ${insetFocusOutline}
   }
 `

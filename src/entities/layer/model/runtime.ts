@@ -1,23 +1,33 @@
-import { useSyncExternalStore } from 'react'
+import { createVedroStore } from '@/shared/lib/vedro'
 
-import { createStoreSubscribe } from '@/shared/lib/vedro'
+import { createLayerApi } from '../api/layer-api'
+import type { LayerRegistry } from '../config/registry/layer-registry'
 
-import { layerApi } from '../api/layer-api'
-import type { LayerRegistry } from '../config/layer-registry'
-
-import { createLayerCache, type LayerCacheStats } from './cache'
-import { createEventLog, type LayerEvent } from './event-log'
-import { createLayerService } from './layer-service'
-import { getActiveRegistry, layerStore, setActiveRegistry } from './layer-store'
-import { updateLayers } from './store'
-import { withOpacity } from './transitions'
-import type { LayerId } from './types'
+import { createLayerCache, DEFAULT_CACHE_SETTINGS, type LayerCacheStats } from './loading/cache'
+import { createEventLog } from './loading/event-log'
+import { createLayerService } from './loading/layer-service/layer-service'
+import { withOpacity } from './state/transitions'
+import type { LayerId } from './state/types'
+import { getActiveRegistry, layerStore, setActiveRegistry } from './store/layer-store'
+import { updateLayers } from './store/store'
 
 const now = () => Date.now()
 
 const RESPONSE_BATCH_WINDOW_MS = 16
 
-export const layerCache = createLayerCache({ now })
+export const layerApi = createLayerApi({ findConfig: (id) => getActiveRegistry().find(id) })
+
+export const layerCacheStatsStore = createVedroStore<LayerCacheStats>('layer-cache-stats', {
+  size: 0,
+  limit: DEFAULT_CACHE_SETTINGS.limit,
+})
+
+export const layerCache = createLayerCache({
+  now,
+  onStatsChange: (stats) => {
+    layerCacheStatsStore.dispatch(stats)
+  },
+})
 
 export const layerEventLog = createEventLog()
 
@@ -74,12 +84,3 @@ export const switchLayerSet = (
   const saved = restore ? snapshots.get(registry) : undefined
   if (saved !== undefined) restoreSnapshot(saved)
 }
-
-const subscribeEvents = createStoreSubscribe(layerEventLog.store)
-const getEvents = () => layerEventLog.store.get('events')
-
-export const useLayerEvents = (): readonly LayerEvent[] =>
-  useSyncExternalStore(subscribeEvents, getEvents)
-
-export const useCacheStats = (): LayerCacheStats =>
-  useSyncExternalStore(layerCache.subscribe, layerCache.getStats)

@@ -9,9 +9,10 @@ type LayerToggleProps = {
 }
 
 export function LayerToggle({ id, checked, title }: LayerToggleProps) {
+  const label = `Слой «${title}»`
   const handleToggle = () => {
     layerCommands.toggle(id)
   }
 
-  return <Switch checked={checked} onToggle={handleToggle} label={`Слой «${title}»`} />
+  return <Switch checked={checked} onToggle={handleToggle} label={label} />
 }

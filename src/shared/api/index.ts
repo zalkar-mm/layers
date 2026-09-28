@@ -1,5 +1,5 @@
 export { type ApiErrorKind, createAbortError } from './mock-layer-api/errors'
-export { GRID_BBOX, GRID_STEP } from './mock-layer-api/grid'
+export { GRID_BBOX, GRID_STEP } from './mock-layer-api/generation/grid'
 export {
   createMockLayerApi,
   createRandomSeed,

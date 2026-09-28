@@ -17,15 +17,15 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: [
-      'src/**/*.test.{ts,tsx}',
+      'tests/unit/**/*.test.{ts,tsx}',
+      'tests/perf/**/*.perf.test.{ts,tsx}',
       'docs/vedro-findings/**/*.test.{ts,tsx}',
-      'perf/**/*.perf.test.{ts,tsx}',
     ],
     restoreMocks: true,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.ts', 'src/app/main.tsx'],
+      exclude: ['src/**/index.ts', 'src/app/main.tsx'],
     },
   },
 })

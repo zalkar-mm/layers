@@ -3,14 +3,17 @@ import { ThemeProvider } from 'styled-components'
 
 import { theme } from '@/shared/ui'
 
+import { router } from './routing/router'
+import { StoreProviders } from './state/store-providers'
 import { GlobalStyles } from './styles/global-styles'
-import { router } from './router'
 
 export function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <RouterProvider router={router} />
+      <StoreProviders>
+        <RouterProvider router={router} />
+      </StoreProviders>
     </ThemeProvider>
   )
 }

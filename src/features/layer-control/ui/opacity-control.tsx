@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 import { layerCommands, type LayerId } from '@/entities/layer'
 
+import { formatPercentValueText, fromPercent, PERCENT_MAX, toPercent } from '@/shared/lib/format'
 import { Slider } from '@/shared/ui'
 
 type OpacityControlProps = {
@@ -11,10 +12,14 @@ type OpacityControlProps = {
   readonly title: string
 }
 
+const VALUE_MIN_WIDTH = '40px'
+
 export function OpacityControl({ id, opacity, disabled, title }: OpacityControlProps) {
-  const percent = Math.round(opacity * 100)
+  const percent = toPercent(opacity)
+  const label = `Прозрачность слоя «${title}»`
+  const valueText = formatPercentValueText(percent)
   const handleChange = (value: number) => {
-    layerCommands.setOpacity(id, value / 100)
+    layerCommands.setOpacity(id, fromPercent(value))
   }
 
   return (
@@ -22,10 +27,10 @@ export function OpacityControl({ id, opacity, disabled, title }: OpacityControlP
       <Slider
         value={percent}
         min={0}
-        max={100}
+        max={PERCENT_MAX}
         disabled={disabled}
-        label={`Прозрачность слоя «${title}»`}
-        valueText={`${String(percent)} процентов`}
+        label={label}
+        valueText={valueText}
         onChange={handleChange}
       />
       <Value>{percent} %</Value>
@@ -40,7 +45,7 @@ const Row = styled.div`
 `
 
 const Value = styled.span`
-  min-width: 40px;
+  min-width: ${VALUE_MIN_WIDTH};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-variant-numeric: tabular-nums;
   text-align: right;

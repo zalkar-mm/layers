@@ -1,14 +1,10 @@
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 
-const focusRing = css`
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.focus};
-    outline-offset: 2px;
-  }
-`
+import { focusRing, touchArea } from '../theme/mixins'
 
 export const Button = styled.button.attrs({ type: 'button' })`
-  min-height: 32px;
+  ${touchArea}
+  min-height: ${({ theme }) => theme.sizes.control};
   padding: ${({ theme }) => `${theme.space.xs} ${theme.space.md}`};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
@@ -33,8 +29,6 @@ export const IconButton = styled(Button)`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: ${({ theme }) => theme.sizes.control};
   padding: 0;
 `
-
-export { focusRing }

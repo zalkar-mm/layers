@@ -1,5 +1,7 @@
 import type { LayerId, LayerRegistry, LayersById } from '@/entities/layer'
 
+import { fromPercent, PERCENT_MAX, toPercent } from '@/shared/lib/format'
+
 export const LAYERS_PARAM = 'l'
 
 export type UrlLayer = {
@@ -11,7 +13,7 @@ const parseOpacity = (raw: string | undefined): number | null => {
   if (raw === undefined || !/^\d{1,3}$/.test(raw)) return null
   const percent = Number(raw)
 
-  return percent <= 100 ? percent / 100 : null
+  return percent <= PERCENT_MAX ? fromPercent(percent) : null
 }
 
 export const parseLayersParam = (value: string | null, registry: LayerRegistry): UrlLayer[] => {
@@ -34,7 +36,7 @@ export const serializeLayers = (ids: readonly LayerId[], byId: LayersById): stri
     .flatMap((id) => {
       const layer = byId[id]
 
-      return layer?.enabled === true ? [`${id}:${String(Math.round(layer.opacity * 100))}`] : []
+      return layer?.enabled === true ? [`${id}:${String(toPercent(layer.opacity))}`] : []
     })
     .join(',')
 

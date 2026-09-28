@@ -1,57 +1,90 @@
-import { memo } from 'react'
+import { type ComponentType, memo } from 'react'
 
 import styled from 'styled-components'
 
 import {
   getLayerConfig,
+  type LayerConfig,
   type LayerId,
   LayerLegend,
-  useEnabledLayerIds,
+  type LayerMapStatus,
   useLayerMapStatus,
+  useMapOverlay,
 } from '@/entities/layer'
 
 import { RenderCount } from '@/shared/lib/dev'
 
-import { MAP_LAYER_LIMIT } from '../model/map-sync'
+import { MAP_LAYER_LIMIT } from '../model/sync/map-sync'
+
+const OVERLAY_WIDTH = '220px'
 
 export function MapOverlay() {
-  const enabledIds = useEnabledLayerIds()
-  const shownIds = enabledIds.slice(0, MAP_LAYER_LIMIT)
+  const { shownIds, enabledCount } = useMapOverlay(MAP_LAYER_LIMIT)
 
   return (
     <Overlay>
       {shownIds.map((id) => (
         <OverlayItem key={id} id={id} />
       ))}
-      {enabledIds.length > MAP_LAYER_LIMIT ? (
-        <Note>
-          На карте первые {MAP_LAYER_LIMIT} из {enabledIds.length} включённых слоёв
-        </Note>
-      ) : null}
+      <LayerLimitNote enabledCount={enabledCount} />
     </Overlay>
   )
 }
 
-const OverlayItem = memo(function OverlayItem({ id }: { readonly id: LayerId }) {
+type LayerLimitNoteProps = {
+  readonly enabledCount: number
+}
+
+function LayerLimitNote({ enabledCount }: LayerLimitNoteProps) {
+  if (enabledCount <= MAP_LAYER_LIMIT) return null
+
+  return (
+    <Note>
+      На карте первые {MAP_LAYER_LIMIT} из {enabledCount} включённых слоёв
+    </Note>
+  )
+}
+
+type OverlayItemProps = {
+  readonly id: LayerId
+}
+
+type OverlayViewProps = {
+  readonly id: LayerId
+  readonly config: LayerConfig
+}
+
+const OVERLAY_VIEWS: Readonly<Record<LayerMapStatus, ComponentType<OverlayViewProps> | null>> = {
+  shown: LegendCard,
+  loading: LoadingChip,
+  off: null,
+  failed: null,
+}
+
+const OverlayItem = memo(function OverlayItem({ id }: OverlayItemProps) {
   const status = useLayerMapStatus(id)
   const config = getLayerConfig(id)
+  const View = OVERLAY_VIEWS[status]
+  if (View === null) return null
 
-  switch (status) {
-    case 'shown':
-      return (
-        <Card>
-          <RenderCount name={`map-legend:${id}`} />
-          <CardTitle>{config.title}</CardTitle>
-          <LayerLegend config={config} />
-        </Card>
-      )
-    case 'loading':
-      return <Chip role="status">Загружается: {config.title}</Chip>
-    case 'off':
-    case 'failed':
-      return null
-  }
+  return <View id={id} config={config} />
 })
+
+function LegendCard({ id, config }: OverlayViewProps) {
+  const renderCountName = `map-legend:${id}`
+
+  return (
+    <Card>
+      <RenderCount name={renderCountName} />
+      <CardTitle>{config.title}</CardTitle>
+      <LayerLegend config={config} />
+    </Card>
+  )
+}
+
+function LoadingChip({ config }: OverlayViewProps) {
+  return <Chip role="status">Загружается: {config.title}</Chip>
+}
 
 const Overlay = styled.div`
   position: absolute;
@@ -59,8 +92,8 @@ const Overlay = styled.div`
   left: ${({ theme }) => theme.space.sm};
   display: grid;
   gap: ${({ theme }) => theme.space.xs};
-  width: min(220px, calc(100% - 16px));
-  max-height: calc(100% - 16px);
+  width: min(${OVERLAY_WIDTH}, calc(100% - 2 * ${({ theme }) => theme.space.sm}));
+  max-height: calc(100% - 2 * ${({ theme }) => theme.space.sm});
   overflow-y: auto;
   pointer-events: none;
 `
@@ -72,22 +105,22 @@ const Card = styled.div`
   padding: ${({ theme }) => theme.space.sm};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.surface};
-  box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+  box-shadow: ${({ theme }) => theme.shadows.floating};
   pointer-events: auto;
 `
 
 const CardTitle = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  font-weight: 600;
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
 `
 
 const Chip = styled.span`
   justify-self: start;
-  padding: 2px ${({ theme }) => theme.space.sm};
+  padding: ${({ theme }) => `${theme.space.xxs} ${theme.space.sm}`};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.surface};
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+  box-shadow: ${({ theme }) => theme.shadows.floating};
 `
 
 const Note = styled.span`

@@ -1,11 +1,13 @@
 import styled from 'styled-components'
 
-import { layerCommands, type LayersSummary } from '@/entities/layer'
+import { layerCommands } from '@/entities/layer'
 
 import { Button } from '@/shared/ui'
 
 type BulkActionsProps = {
-  readonly summary: LayersSummary
+  readonly enableAllDisabled: boolean
+  readonly disableAllDisabled: boolean
+  readonly retryFailedDisabled: boolean
 }
 
 const handleEnableAll = () => {
@@ -18,16 +20,20 @@ const handleRetryFailed = () => {
   layerCommands.retryFailed()
 }
 
-export function BulkActions({ summary }: BulkActionsProps) {
+export function BulkActions({
+  enableAllDisabled,
+  disableAllDisabled,
+  retryFailedDisabled,
+}: BulkActionsProps) {
   return (
     <Group>
-      <Button onClick={handleEnableAll} disabled={summary.enabled === summary.total}>
+      <Button onClick={handleEnableAll} disabled={enableAllDisabled}>
         Включить все
       </Button>
-      <Button onClick={handleDisableAll} disabled={summary.enabled === 0}>
+      <Button onClick={handleDisableAll} disabled={disableAllDisabled}>
         Выключить все
       </Button>
-      <Button onClick={handleRetryFailed} disabled={summary.failed === 0}>
+      <Button onClick={handleRetryFailed} disabled={retryFailedDisabled}>
         Повторить ошибки
       </Button>
     </Group>
@@ -37,5 +43,5 @@ export function BulkActions({ summary }: BulkActionsProps) {
 const Group = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.space.xs};
+  gap: ${({ theme }) => theme.space.sm};
 `

@@ -42,7 +42,7 @@
 | [architecture.md](architecture.md) | Слои FSD, public API, куда что класть, против оверинжиниринга |
 | [code-style.md](code-style.md) | Нейминг, TypeScript, React, JSX, мемоизация |
 | [state-and-async.md](state-and-async.md) | vedro, команды, хуки подписки, кэш, гонки |
-| [ui.md](ui.md) | styled-components, тема, состояния, тексты, доступность |
+| [ui.md](ui.md) | styled-components, тема, тач-цели, состояния, тексты, доступность |
 | [testing.md](testing.md) | Vitest, RTL, Playwright, фейковые таймеры, счётчик рендеров |
 | [workflow.md](workflow.md) | Этапы, коммиты, проверки, зависимости |
 | [review.md](review.md) | Ревью diff: P0/P1/P2, формат, что не флагаем |

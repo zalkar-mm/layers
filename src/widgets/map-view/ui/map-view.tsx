@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import { RenderCount } from '@/shared/lib/dev'
 
-import { loadMap } from '../model/load-map'
+import { loadMap } from '../model/map/load-map'
 
 import { MapOverlay } from './map-overlay'
 
@@ -46,12 +46,20 @@ export function MapView() {
     <Wrapper>
       <RenderCount name="map" />
       <MapContainer ref={containerRef} />
-      {failed ? (
-        <Fallback role="status">Карта недоступна: браузер не поддерживает WebGL</Fallback>
-      ) : null}
+      <MapUnavailableNotice failed={failed} />
       <MapOverlay />
     </Wrapper>
   )
+}
+
+type MapUnavailableNoticeProps = {
+  readonly failed: boolean
+}
+
+function MapUnavailableNotice({ failed }: MapUnavailableNoticeProps) {
+  if (!failed) return null
+
+  return <Fallback role="status">Карта недоступна: браузер не поддерживает WebGL</Fallback>
 }
 
 const Wrapper = styled.div`

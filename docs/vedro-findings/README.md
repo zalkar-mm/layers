@@ -14,12 +14,12 @@ yarn vitest run docs/vedro-findings
 |---|---|---|---|---|
 | V1 | `dispatch(async cb)`: значение из async-колбэка в стор не попадает | ✅ Подтверждено | [v1](v1-async-dispatch.test.ts) | Асинхронность — в командах, в стор пишем синхронным `dispatch` |
 | V2 | Новый ключ верхнего уровня через колбэк или объект → исключение | ✅ Подтверждено, с уточнением | [v2](v2-new-top-level-key.test.ts) | Слои в `byId`, набор ключей стора фиксирован |
-| V3 | Штатный `useSelector`: на каждый `dispatch` все селекторы × 2 и `JSON.stringify` × 2 | ✅ Подтверждено | [v3](v3-selector-cost.test.tsx) | Свои хуки на `useSyncExternalStore`, сравнение по ссылке |
-| V4 | Штатный `useSelector` «замерзает» на пропсах первого рендера и теряет обновление до подписки | ✅ Подтверждено | [v4](v4-selector-subscription.test.tsx) | То же |
-| V5 | `useDispatch` — новая функция на каждый рендер | ✅ Подтверждено | [v5](v5-use-dispatch-identity.test.tsx) | Компоненты вызывают команды-модули, `dispatch` в пропсах не передаётся |
-| V6 | Повторный unsubscribe у `@state` удаляет чужого подписчика | ✅ Подтверждено, с уточнением | [v6](v6-double-unsubscribe.test.ts) | Идемпотентный guard вокруг unsubscribe |
+| V3 | Штатный `useSelector`: на каждый `dispatch` все селекторы × 2 и `JSON.stringify` × 2 | ✅ Подтверждено | [v3](v3-selector-cost.test.tsx) | Селекторы отдают маленький вид без данных слоя (`LayerRowView`, сводка, оверлей): сериализуется несколько полей, а не GeoJSON. Селекторы тотальные, мемоизация — `WeakMap` по `byId` |
+| V4 | Штатный `useSelector` «замерзает» на пропсах первого рендера и теряет обновление до подписки | ✅ Подтверждено | [v4](v4-selector-subscription.test.tsx) | Страховка в `bindVedroStore`: на рендере значение сверяется со свежим `selector(store.get())`, после подписки эффект догоняет пропущенное обновление |
+| V5 | `useDispatch` — новая функция на каждый рендер | ✅ Подтверждено | [v5](v5-use-dispatch-identity.test.tsx) | `useDispatch` не используется: компоненты вызывают команды-модули, `dispatch` в пропсах не передаётся |
+| V6 | Повторный unsubscribe у `@state` удаляет чужого подписчика | ✅ Подтверждено, с уточнением | [v6](v6-double-unsubscribe.test.ts) | Свои подписки вне React (`subscribeToKey`) — через идемпотентный `once`. Отписку штатного `useSelector` проверяет тест StrictMode: чужой подписчик `@state` не теряется |
 | V7 | `store.on(key, cb)` работает вне React | ✅ Подтверждено, с уточнением | [v7](v7-subscribe-outside-react.test.ts) | MapSync подписывается на `byId` и сравнивает слои по ссылке |
-| N1 | `get()` без ключа возвращает новую копию на каждый вызов | 🆕 Новая находка | [n1](n1-get-returns-copy.test.tsx) | `getSnapshot` хуков берёт `get('byId')`, а не `get()` |
+| N1 | `get()` без ключа возвращает новую копию на каждый вызов | 🆕 Новая находка | [n1](n1-get-returns-copy.test.tsx) | Страховка V4 вызывает `selector(store.get())`: копия верхнего уровня не мешает, селекторы и их мемоизация опираются на ссылки `byId` и `ids`. Вне React — `get('byId')` |
 
 ## Подробности
 
@@ -72,6 +72,8 @@ yarn vitest run docs/vedro-findings
 `lib/_internal/_DTO.js:32–33`: `getState()` возвращает `{ ...state }` на каждый вызов. `get('byId')` возвращает ту же ссылку, пока ключ не менялся.
 
 Следствие для §4.3 ТЗ: `getSnapshot` в `useSyncExternalStore` не может быть `() => store.get()` — React получает новый объект на каждый вызов и падает с `Maximum update depth exceeded`. Снимок берётся из `get('byId')` и дальше по ссылке.
+
+С 28.09.2026 решение на штатном `useSelector` ([ADR 009](../adr/009-standard-vedro-api.md)): копия из `get()` сравнивается через `JSON.stringify` результата селектора, а не по ссылке, поэтому цикла нет.
 
 ## Ограничение проверки
 

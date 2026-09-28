@@ -9,11 +9,22 @@ import { MapView } from '@/widgets/map-view'
 import { StressModeSwitch } from '@/features/stress-mode'
 
 import { RenderCountsToggle } from '@/shared/lib/dev'
+import { insetFocusRing } from '@/shared/ui'
 
 type SheetTab = 'layers' | 'chaos'
 
 export function MapPage() {
   const [tab, setTab] = useState<SheetTab>('layers')
+  const isLayersTab = tab === 'layers'
+  const isChaosTab = tab === 'chaos'
+  const isLayersHidden = !isLayersTab
+  const isChaosHidden = !isChaosTab
+  const handleLayersTabClick = () => {
+    setTab('layers')
+  }
+  const handleChaosTabClick = () => {
+    setTab('chaos')
+  }
 
   return (
     <Layout>
@@ -29,10 +40,8 @@ export function MapPage() {
             role="tab"
             id="sheet-tab-layers"
             aria-controls="sheet-panel-layers"
-            aria-selected={tab === 'layers'}
-            onClick={() => {
-              setTab('layers')
-            }}
+            aria-selected={isLayersTab}
+            onClick={handleLayersTabClick}
           >
             Слои
           </Tab>
@@ -40,10 +49,8 @@ export function MapPage() {
             role="tab"
             id="sheet-tab-chaos"
             aria-controls="sheet-panel-chaos"
-            aria-selected={tab === 'chaos'}
-            onClick={() => {
-              setTab('chaos')
-            }}
+            aria-selected={isChaosTab}
+            onClick={handleChaosTabClick}
           >
             Chaos
           </Tab>
@@ -52,7 +59,7 @@ export function MapPage() {
           role="tabpanel"
           id="sheet-panel-layers"
           aria-labelledby="sheet-tab-layers"
-          $hiddenOnMobile={tab !== 'layers'}
+          $hiddenOnMobile={isLayersHidden}
         >
           <LayerPanel
             headerExtra={
@@ -67,7 +74,7 @@ export function MapPage() {
           role="tabpanel"
           id="sheet-panel-chaos"
           aria-labelledby="sheet-tab-chaos"
-          $hiddenOnMobile={tab !== 'chaos'}
+          $hiddenOnMobile={isChaosHidden}
         >
           <ChaosPanel />
         </Section>
@@ -133,24 +140,23 @@ const Tabs = styled.div`
   `)}
 `
 
+const TAB_INDICATOR_WIDTH = '2px'
+
 const Tab = styled.button.attrs({ type: 'button' })`
   flex: 1;
   min-height: ${({ theme }) => theme.sizes.touchTarget};
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: ${TAB_INDICATOR_WIDTH} solid transparent;
   background: none;
   font: inherit;
   cursor: pointer;
 
   &[aria-selected='true'] {
     border-bottom-color: ${({ theme }) => theme.colors.accent};
-    font-weight: 600;
+    font-weight: ${({ theme }) => theme.fontWeights.semibold};
   }
 
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.focus};
-    outline-offset: -2px;
-  }
+  ${insetFocusRing}
 `
 
 const Section = styled.div<{ $hiddenOnMobile: boolean }>`
